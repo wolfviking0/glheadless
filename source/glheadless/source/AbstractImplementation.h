@@ -3,6 +3,7 @@
 #include <functional>
 #include <unordered_map>
 #include <memory>
+#include <string>
 
 
 #define GLHEADLESS_REGISTER_IMPLEMENTATION(api, clazz) \
