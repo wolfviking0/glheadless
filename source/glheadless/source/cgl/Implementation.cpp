@@ -212,10 +212,34 @@ void (*Implementation::getProcAddress(const char * name))() {
 
 
 void Implementation::setPixelFormat(const ContextFormat& format) {
-    const auto pixelFormatAttributes = createPixelFormatAttributeList(format);
+    
+    // TODO Update the function create pixel format attribute list
+    // const auto pixelFormatAttributes = createPixelFormatAttributeList(format);
+
+    std::vector<CGLPixelFormatAttribute> attributes;
+
+    if (format.versionMajor == 4) {
+        attributes.push_back(kCGLPFAOpenGLProfile);
+        attributes.push_back(static_cast<CGLPixelFormatAttribute>(kCGLOGLPVersion_GL4_Core));
+    } else if (format.versionMajor == 3) {
+        attributes.push_back(kCGLPFAOpenGLProfile);
+        attributes.push_back(static_cast<CGLPixelFormatAttribute>(kCGLOGLPVersion_GL3_Core));
+    } else if (format.versionMajor == 2 || format.versionMajor == 1 || format.versionMajor == 0) {
+        attributes.push_back(kCGLPFAOpenGLProfile);
+        attributes.push_back(static_cast<CGLPixelFormatAttribute>(kCGLOGLPVersion_Legacy));
+    } else {
+        throw InternalException(Error::INVALID_CONFIGURATION, "Unsupported OpenGL version: " + std::to_string(format.versionMajor));
+    }
+
+    attributes.push_back(kCGLPFAAccelerated);
+    attributes.push_back(static_cast<CGLPixelFormatAttribute>(GL_TRUE));
+    attributes.push_back(kCGLPFAClosestPolicy);
+    attributes.push_back(static_cast<CGLPixelFormatAttribute>(GL_TRUE));
+    attributes.push_back(kCGLPFAAllowOfflineRenderers);
+    attributes.push_back(static_cast<CGLPixelFormatAttribute>(0));
 
     GLint numVirtualScreens;
-    const auto error = CGLChoosePixelFormat(pixelFormatAttributes.data(), &m_pixelFormatHandle, &numVirtualScreens);
+    const auto error = CGLChoosePixelFormat(attributes.data(), &m_pixelFormatHandle, &numVirtualScreens);
     if (error != kCGLNoError) {
         throw InternalException(Error::INVALID_CONFIGURATION, "CGLChoosePixelFormat failed");
     }
